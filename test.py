@@ -1,4 +1,4 @@
-from graph import Edge
+from graph import Digraph, Edge, Node
 from ps11 import WeightedEdge
 
 
@@ -6,10 +6,18 @@ from ps11 import WeightedEdge
 def buildAll(fileName = "mit_map.txt", test = True):
 
     allNodes = set()
-    # testEdge = WeightedEdge(1, 2, 3)
     allEdges = set()
 
-    def getPaths(fileName = "mit_map.txt"):
+    def getEdgeAndNodeVals(fileName = "mit_map.txt"):
+        """
+        Generator takes a file of lines organized like:
+            13 20 32 500
+            1234 12 53 1353
+        Takes a line from the data set.
+        Splits it into a tuple of unique values, delimited by a space
+        Removes the "\n" from a bunch of the 4th (outdoorsDist) values
+        Yields the next tuple of paths each time its called
+        """
 
         def valWithoutNewline(val):
             return val.replace("\n", "")
@@ -33,7 +41,6 @@ def buildAll(fileName = "mit_map.txt", test = True):
                 addNodeToList(Node(name))
 
         checkThenAddNodeIfFalse(name)
-        return allNodes
 
     def buildThenAddEdge(src, dest, dist, outdoorsDist):
 
@@ -41,50 +48,58 @@ def buildAll(fileName = "mit_map.txt", test = True):
             return (src, dest) in {(edge.getSource(), edge.getDestination()) for edge in allEdges}
 
         def addEdgeToList(src, dest, dist, outdoorsDist):
-            allEdges.add(Edge(src, dest, dist, outdoorsDist))
+            allEdges.add(WeightedEdge(src, dest, dist, outdoorsDist))
 
         def checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist):
             if edgeExists(src, dest) == False:
-                addEdgeToList(Edge(src, dest, dist, outdoorsDist))
+                addEdgeToList(src, dest, dist, outdoorsDist)
 
         checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist)
 
-        return allEdges
-
-    curPath = getPaths(fileName).next()
+    valGen = getEdgeAndNodeVals(fileName)
+    curPath = valGen.next()
     counter = 0
 
     def forgetOrBuildEachNode():
-        buildThenAddNode(str(curPath[0]))
-        buildThenAddNode(str(curPath[1]))
+        print(allNodes)
+        buildThenAddNode(curPath[0])
+        buildThenAddNode(curPath[1])
 
-    def buildEachEdge():
-        # src, dest, dist, outdoorsDist =
-        buildThenAddEdge()
+    def forgetOrBuildEachEdge():
+        src, dest, dist, outdoorsDist = curPath[0], curPath[1], curPath[2], curPath[3]
+        buildThenAddEdge(src, dest, dist, outdoorsDist)
 
     while curPath != None and counter < 100:
         forgetOrBuildEachNode()
-        curPath = getPaths(fileName).next()
+        forgetOrBuildEachEdge()
+        curPath = valGen.next()
         counter += 1
 
     def testFunction(func = None, params = None, allNodes = allNodes, valCheck = None):
         def buildAndExecuteFunc():
             pass
+
         def checkValues():
-            pass
-        print(valCheck)
-        if params == None:
-            print(WeightedEdge.__mro__)
-            # allNodes = addNodeToList(allNodes, 32)
-        print(valCheck)
+            print("checkValues() running...")
+            for edge in allEdges:
+                print(edge)
+
+        checkValues()
+        buildAndExecuteFunc()
+        # if params == None:
+        #     buildAndExecuteFunc()
+        checkValues()
     testFunction(valCheck = allNodes)
 
 # buildAll()
 
-def testClass(valCheck = None):
-    print(WeightedEdge.__mro__)
+# def testClass(valCheck = None):
+#     print(WeightedEdge.__mro__)
+#
+# testClass()
 
-testClass()
+buildAll()
+
 # testFunction(valCheck = allNodes)
 
 # for splitLine in mitMapLines:
@@ -94,5 +109,5 @@ testClass()
 # How to get the name of the variable
 # How to get the params of the function for use in executing another function.
 
-# getPaths("mit_map.txt")
+# getEdgeAndNodeVals("mit_map.txt")
 # Use this idea for creating log decorators
