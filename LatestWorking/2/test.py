@@ -1,7 +1,6 @@
 from graph import Digraph, Edge, Node
 from ps11 import WeightedEdge, WeightedDigraph
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
+
 
 
 def buildAll(fileName = "mit_map.txt", test = True):
@@ -46,85 +45,45 @@ def buildAll(fileName = "mit_map.txt", test = True):
 
     def buildThenAddEdge(src, dest, dist, outdoorsDist):
 
-        def edgeExists(src, dest, dist, outdoorsDist):
-            print("\nedgeExists running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            # return (src, dest) in {(edge.getSource(), edge.getDestination()) for edge in allEdges}
-            print(graphOfMITMap.getEdges())
-            return graphOfMITMap.hasEdge(src, dest, dist, outdoorsDist)
+        def edgeExists(src, dest):
+            return (src, dest) in {(edge.getSource(), edge.getDestination()) for edge in allEdges}
 
         def addEdgeToList(src, dest, dist, outdoorsDist):
-            print("\naddEdgeToList running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            graphOfMITMap.addEdge(WeightedEdge(src, dest, dist, outdoorsDist))
+            print(WeightedEdge.__mro__)
+            allEdges.add(WeightedEdge(src, dest, dist, outdoorsDist))
 
         def checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist):
-            print("\ncheckThenAddEdgeIfFalse running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            if edgeExists(src, dest, dist, outdoorsDist) == False:
+            if edgeExists(src, dest) == False:
                 addEdgeToList(src, dest, dist, outdoorsDist)
 
         checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist)
 
-
     valGen = getEdgeAndNodeVals(fileName)
-    # curPath = valGen.next()
+    curPath = valGen.next()
+    counter = 0
 
-    # def valGenTest(valGen = valGen):
-    #     for x in xrange(0, 100):
-    #         curPath = valGen.next()
-    #         print(curPath)
-    # valGenTest()
-
-    def forgetOrBuildEachNode(curPath):
-        print("\nforgetOrBuildEachNode running...")
-        print("curPath:", curPath)
+    def forgetOrBuildEachNode():
         buildThenAddNode(curPath[0])
         buildThenAddNode(curPath[1])
 
-    def forgetOrBuildEachEdge(curPath):
-        print("\nforgetOrBuildEachEdge running...")
-        print("curPath:", curPath)
+    def forgetOrBuildEachEdge():
         src, dest, dist, outdoorsDist = curPath[0], curPath[1], curPath[2], curPath[3]
         buildThenAddEdge(src, dest, dist, outdoorsDist)
 
-    def buildAll(valGen = valGen):
-        print("\nbuildAll running...")
-        # print("curPath:", curPath)
-
-        def build(func, valGen = valGen):
-            counter = 0
-            # curPath = valGen.next()
-            for curPath in valGen:
-            # while curPath != None and counter < 100:
-                # nonlocal curPath
-
-                func(curPath = curPath)
-                # counter += 1
-        build(func = forgetOrBuildEachNode)
-        build(func = forgetOrBuildEachEdge)
-
-
-
-    # buildAll(func=forgetOrBuildEachEdge)
+    while curPath != None and counter < 100:
+        forgetOrBuildEachNode()
+        forgetOrBuildEachEdge()
+        curPath = valGen.next()
+        counter += 1
 
     def testFunction(func = None, params = None, valCheck = None):
         def buildAndExecuteFunc():
-            buildAll()
+            pass
 
         def checkValues():
             print("checkValues() running...")
-            # for edge in graphOfMITMap.getEdges():
-            #     print(edge)
             for node in graphOfMITMap.getNodes():
-                print("Node:", node)
-
-            # update a variable like you would with a format, but use a parameter
-            # from a function to modify
-
+                print(node)
 
         checkValues()
         buildAndExecuteFunc()

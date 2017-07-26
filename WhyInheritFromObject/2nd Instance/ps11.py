@@ -9,28 +9,26 @@
 import string
 from graph import Digraph, Edge, Node
 
-class WeightedEdge(Edge):
+class WeightedEdge(object):
     """docstring for WeightedEdge."""
-    def __init__(self, src, dest, dist, outdoorsDist):
+    def __init__(self, src, dest, dist):
         super(WeightedEdge, self).__init__(src, dest)
-        self.totalDist = dist
-        self.outdoorsDist = outdoorsDist
-    def getDistances(self):
-        return self.totalDist, self.outdoorsDist
+        self.distanceWeight = dist
+        self.distOutdoorsWeight = outdoorsDist
+    def getDistances():
+        return self.distWeight, self.distOutdoorsWeight
 
 class WeightedDigraph(Digraph):
     """docstring for WeightedDigraph."""
     def addEdge(self, edge):
         src = edge.getSource()
         dest = edge.getDestination()
-        totalDist, outdoorsDist = edge.getDistances()
+        totalDist, outdoorsDist= edge.getDistances()
         if not(src in self.nodes and dest in self.nodes):
             raise ValueError('Node not in graph')
         self.edges[src].append(dest, totalDist, outdoorsDist)
     def hasNode(self, nodeName):
         return nodeName in {node.getName() for node in self.nodes}
-    def hasEdge(self, src, dest, dist, outdoorsDist):
-        return (dest, dist, outdoorsDist) in self.edges.values()
     def getNodes(self):
         return self.nodes
     def getEdges(self):
@@ -83,11 +81,6 @@ def load_map(mapFilename):
 #
 # State the optimization problem as a function to minimize
 # and the constraints
-
-Minimize the time spent outdoors, using only a path in the graph from point A to
-point
-# TODO:
-
 #
 
 def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
