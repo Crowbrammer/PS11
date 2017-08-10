@@ -6,7 +6,13 @@ class Node(object):
    def __str__(self):
        return self.name
    def __eq__(self, other):
-      return self.name == other.name
+    #   print "self:", self
+      if type(other) != type(self):
+          assert type(other) == tuple
+        #   print "other[0]:", other[0]
+          return self.name == other[0].name
+      else:
+          return self.name == other.name
    def __ne__(self, other):
       return not self.__eq__(other)
 

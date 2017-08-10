@@ -1,155 +1,72 @@
+import string
 from graph import Digraph, Edge, Node
 from ps11 import WeightedEdge, WeightedDigraph
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
 
+def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
+    """
+    This is a function that should implement itself many times. The ultimate in
+    economy. The self-perpetuating machine.
+    """
+    for node in digraph.getNodes():
+        if str(start) == node.getName():
+            start = node
+        elif str(dest) == node.getName():
+            dest = node
 
-def buildAll(fileName = "mit_map.txt", test = True):
+    def search(path = [start], completedPaths = set()):
+        for childNode in digraph.childrenOf(path[-1:]):
+            if childNode not in path:
+                if childNode == dest:
+                    # Modifier method
+                    # completedPath = path + [childNode] # This may modify the
+                    # completePaths += completedPath
+                    # Pure method
+                    return path + [childNode], completedPaths.add((path + [childNode])) #, nodesSeen # At each frame, return the current path and whether it's a match or not.
+                else: # Has children (that are not in the path)
+                    # if None
+                    if childNode.childrenOf():
+                        return search(path = path + [childNode], completedPaths = completedPaths) #, nodesSeen)
+                    else:
+                        print "No children nodes for node {}".format(path[-1:].getName())
+        if not completedPaths:
+            return "No path from start node to dest node exists..."
+        else:
+            return completedPaths
+    return search()
 
-    graphOfMITMap = WeightedDigraph()
-    # allNodes = set()
-    allEdges = set()
+bruteForceSearch(load)
+    # Doesn't return anything if it reaches a node with no childNodes not in the paths
+    # Where do I* handle the None returns in these types of situations?
+    # Doesn't return anything if it reaches a node with no childNodes, period.
 
-    def getEdgeAndNodeVals(fileName = "mit_map.txt"):
-        """
-        Generator takes a file of lines organized like:
-            13 20 32 500
-            1234 12 53 1353
-        Takes a line from the data set.
-        Splits it into a tuple of unique values, delimited by a space
-        Removes the "\n" from a bunch of the 4th (outdoorsDist) values
-        Yields the next tuple of paths each time its called
-        """
+def testSets(set1, set2):
+    # set1 = {node.getName() for node in set1}
+    # set2 = {node.getName() for node in set2}
+    # print "\ntype(set1), type(set2):\n", type(set1), type(set2)
+    print "\nset1:\n", set1
+    print "\nset2:\n", set2
+    print "\nset1 - set2:\n", set1 - set2
+    print "min({set1, set2}):", min(set1, set2)
+    # print "\nset1 in set2:\n", set1 in set2
+    # print "\nset1 not in set2:\n", set1 not in set2
+    # print "\nset1.issubset(set2):\n", set1.issubset(set2)
+    # print "\nset1.issuperset(set2):\n", set1.issuperset(set2)
+    # print "\nset1.union(set2):\n", set1.union(set2)
+    # print "\nset1.intersection(set2):\n", set1.intersection(set2)
+    # print "\nset1.difference(set2):\n", set1.difference(set2)
+    # if not set1.difference(set2):
+    #     print "Works"
+    # print "\nset1.symmetric_difference(set2):\n", set1.symmetric_difference(set2)
+    # print "\nset1.copy():\n", set1.copy()
 
-        def valWithoutNewline(val):
-            return val.replace("\n", "")
+testVisited = {1, 2, 3, 4}
+testChildren = {1, 2}
+testSets(testVisited, testChildren)
+testSets(testChildren, testVisited)
+assert False, 'testSets run'
 
-        with open(fileName) as f:
-            for line in f:
-                splitLine = line.split(" ")
-                splitLine[3] = valWithoutNewline(splitLine[3])
-                yield splitLine
-
-    def buildThenAddNode(name):
-
-        def nodeExists(name):
-            return graphOfMITMap.hasNode(name)
-
-        def addNodeToGraph(name):
-            graphOfMITMap.addNode(Node(name))
-
-        def checkThenAddNodeIfFalse(name):
-            if nodeExists(name) == False:
-                addNodeToGraph(name)
-
-        checkThenAddNodeIfFalse(name)
-
-    def buildThenAddEdge(src, dest, dist, outdoorsDist):
-
-        def edgeExists(src, dest, dist, outdoorsDist):
-            print("\nedgeExists running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            # return (src, dest) in {(edge.getSource(), edge.getDestination()) for edge in allEdges}
-            print(graphOfMITMap.getEdges())
-            return graphOfMITMap.hasEdge(src, dest, dist, outdoorsDist)
-
-        def addEdgeToList(src, dest, dist, outdoorsDist):
-            print("\naddEdgeToList running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            graphOfMITMap.addEdge(WeightedEdge(src, dest, dist, outdoorsDist))
-
-        def checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist):
-            print("\ncheckThenAddEdgeIfFalse running...")
-            print("curPath:", curPath)
-            print("src, dest, dist, outdoorsDist: {}, {}, {}, {}")
-            if edgeExists(src, dest, dist, outdoorsDist) == False:
-                addEdgeToList(src, dest, dist, outdoorsDist)
-
-        checkThenAddEdgeIfFalse(src, dest, dist, outdoorsDist)
-
-
-    valGen = getEdgeAndNodeVals(fileName)
-    # curPath = valGen.next()
-
-    # def valGenTest(valGen = valGen):
-    #     for x in xrange(0, 100):
-    #         curPath = valGen.next()
-    #         print(curPath)
-    # valGenTest()
-
-    def forgetOrBuildEachNode(curPath):
-        print("\nforgetOrBuildEachNode running...")
-        print("curPath:", curPath)
-        buildThenAddNode(curPath[0])
-        buildThenAddNode(curPath[1])
-
-    def forgetOrBuildEachEdge(curPath):
-        print("\nforgetOrBuildEachEdge running...")
-        print("curPath:", curPath)
-        src, dest, dist, outdoorsDist = curPath[0], curPath[1], curPath[2], curPath[3]
-        buildThenAddEdge(src, dest, dist, outdoorsDist)
-
-    def buildAll(valGen = valGen):
-        print("\nbuildAll running...")
-        # print("curPath:", curPath)
-
-        def build(func, valGen = valGen):
-            counter = 0
-            # curPath = valGen.next()
-            for curPath in valGen:
-            # while curPath != None and counter < 100:
-                # nonlocal curPath
-
-                func(curPath = curPath)
-                # counter += 1
-        build(func = forgetOrBuildEachNode)
-        build(func = forgetOrBuildEachEdge)
-
-
-
-    # buildAll(func=forgetOrBuildEachEdge)
-
-    def testFunction(func = None, params = None, valCheck = None):
-        def buildAndExecuteFunc():
-            buildAll()
-
-        def checkValues():
-            print("checkValues() running...")
-            # for edge in graphOfMITMap.getEdges():
-            #     print(edge)
-            for node in graphOfMITMap.getNodes():
-                print("Node:", node)
-
-            # update a variable like you would with a format, but use a parameter
-            # from a function to modify
-
-
-        checkValues()
-        buildAndExecuteFunc()
-        # if params == None:
-        #     buildAndExecuteFunc()
-        checkValues()
-    testFunction()
-
-# buildAll()
-
-# def testClass(valCheck = None):
-#     print(WeightedEdge.__mro__)
+# When it hits a dead end with no completedPath
 #
-# testClass()
 
-buildAll()
-
-# testFunction(valCheck = allNodes)
-
-# for splitLine in mitMapLines:
-#     node1, node2 = splitLine[0], splitLine[1]
-
-
-# How to get the name of the variable
-# How to get the params of the function for use in executing another function.
-
-# getEdgeAndNodeVals("mit_map.txt")
-# Use this idea for creating log decorators
+# I want footnoted marks that let me keep notes on the code, and quickly visited
+# where I was talking about. Like hypothes.is

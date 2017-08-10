@@ -6,10 +6,8 @@
 # Finding shortest paths through MIT buildings
 #
 
-import string, time
+import string
 from graph import Digraph, Edge, Node
-
-start_time = time.time()
 
 class WeightedEdge(Edge):
     """docstring for WeightedEdge."""
@@ -239,7 +237,7 @@ def load_map(fileName = "mit_map.txt", test = True):
 # # TODO:
 #
 
-def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
+def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
     """
     Finds the shortest path from start to end using brute-force approach.
     The total distance travelled on the path must not exceed maxTotalDist, and
@@ -263,83 +261,105 @@ def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
         If there exists no path that satisfies maxTotalDist and
         maxDistOutdoors constraints, then raises a ValueError.
     """
-    # NOTE: I want it to return ALL complete paths.
     #TODO
-    printNames = True
-    for node in digraph.getNodes():
-        if str(start) == node.getName():
-            start = node
-        elif str(dest) == node.getName():
-            dest = node
+    # Will need to do something at each node.
+    # Each node will call itself but with new parameters at each child node,
+    # if that child has children (i.e. the current node is a grandparent.), and its
+    # not a node it's visited before.
+    # Because this is unoptimized, it should store all paths, period, then optimize
 
-    completedPaths = set()
-    allPaths = []
+    # for node in digraph.getNodes():
+    #     print(node)
+        # try:
+        #     print(digraph.childrenOf(node.getName()))
+        # except KeyError as e:
+        #     print("KeyError:", e)
+    totalOutdoorsDist = 0
+    workingPaths = []
+    curPath = []
+    def search(currNode, curPath, counter = 0):
+        # Set Variables
+        # A more readable code file -> decompose it
+        # Code that actually works -> Remove every option that's been done before
+        #                              and only go forward if there's an unused node
 
-    def search(path = [start]):
+        def convertStartIntToNode(int):
+            for node in digraph.getNodes():
+                if node.getName() == str(currNode):
+                    return node
+        currNode = convertStartIntToNode(start)
+        assert type(currNode) == Node
 
-        parentNode = path[-1:][0]
+        path = []
+        if counter == 0:
+            pathMemory = {currNode}
 
-        def printNames(path, parentNode, child):
-            print "\nPath:"
-            for i in xrange(len(path)):
-                print "{}:".format(i), path[i].getName()
-            print "\nParent Node:", parentNode
-            print "\nChild Nodes:"
-            for child in digraph.childrenOf(parentNode):
-                # print "child[0].getName():", child[0].getName()
-                print "Child of Node {}: {}".format(parentNode.getName(), child[0].getName())
+        def goThroughEachChild(path = path):
+
+            def checkIfDest(node, dest):
+                return node.getName() == str(dest)
+
+            def checkIfVisited(node, pathMemory):
+                return node in pathMemory
+
+            def checkIfParentOfUnvisited(node, pathMemory):
+
+                unvisitedSetOfNodes = set(digraph.childrenOf(node)).difference(pathMemory)
+                if unvisitedSetOfNodes: # Has new nodes
+                    return unvisitedSetOfNodes
+                else:
+                    return False
+
+            def addToPathAndContinue():
+                pass
+
+            def addToPathAndFinish():
+                pass
+            # def testSets(set1, set2):
+            #     # set1 = {node.getName() for node in set1}
+            #     # set2 = {node.getName() for node in set2}
+            #     print "\ntype(set1), type(set2):\n", type(set1), type(set2)
+            #     print "\nset1:\n", set1
+            #     print "\nset2:\n", set2
+            #     print "\nset1 in set2:\n", set1 in set2
+            #     print "\nset1 not in set2:\n", set1 not in set2
+            #     print "\nset1.issubset(set2):\n", set1.issubset(set2)
+            #     print "\nset1.issuperset(set2):\n", set1.issuperset(set2)
+            #     print "\nset1.union(set2):\n", set1.union(set2)
+            #     print "\nset1.intersection(set2):\n", set1.intersection(set2)
+            #     print "\nset1.difference(set2):\n", set1.difference(set2)
+            #     if not set1.difference(set2):
+            #         print "Works"
+            #     print "\nset1.symmetric_difference(set2):\n", set1.symmetric_difference(set2)
+            #     print "\nset1.copy():\n", set1.copy()
+            #
+            # testVisited = {1, 2, 3, 4}
+            # testChildren = {1, 2, 3, 4}
+            # testSets(testVisited, testChildren)
+            # assert False, 'testSets run'
+
+            # print "digraph.childrenOf(currNode)", digraph.childrenOf(currNode)
+            # print "Set comp of children:", {restOfEdge[0] for restOfEdge in set(digraph.childrenOf(currNode))}
+
+            for childNode in digraph.childrenOf(currNode):
+                currNodeChildren = {child[0] for child in digraph.childrenOf(currNode)}
+                # testSets(currNodeChildren , pathMemory)
+                if checkIfDest(childNode[0], end):
+                    path += [childNode[0]]
+                    return path
+                elif checkIfVisited(childNode[0], pathMemory):
+                    continue
+                # if nodeChild hasChildren and childIsNotInMemory:
+                elif checkIfParentOfUnvisited(currNode, pathMemory):
+                    pathMemory.add(currNode)
+                    return path + search(childNode[0], end)
+
+        return goThroughEachChild()
+            # print "# of steps: {}".format(counter)
+    return search(start, [start])
 
 
-        def printStart():
-            print "\nNode: {}".format(parentNode.getName())
-            print "\nChild Nodes:"
-            for child in digraph.childrenOf(parentNode):
-                # print "child[0].getName():", child[0].getName()
-                print "Child of Node {}: {}".format(parentNode.getName(), child[0].getName())
-
-        # printStart()
-
-        for childNode in digraph.childrenOf(parentNode):
-            # print "childNode[0], dest:", childNode[0], dest
-            if childNode[0] not in path: # Don't understand in, not, and __eq__
-                if childNode[0] == dest:
-                    # Modifier method
-                    # completedPath = path + [childNode] # This may modify the
-                    # completePaths += completedPath
-                    # Pure method
-                    completedPath = path + [childNode[0]]
-                    completedPaths.add(tuple(completedPath)) # This tuple is pretty messy. Am I adding what I* want to add?
-                    allPaths.append(completedPath)
-
-                    # print "Completed path added to completedPaths:", completedPath
-                    # return path + [childNode[0]] #, nodesSeen # At each frame, return the current path and whether it's a match or not.
-                else: # Has children (that are not in the path)
-                    # if None
-
-                    # printNames(path, parentNode, childNode)
-                    if digraph.childrenOf(childNode[0]):
-                        nextPath = path + [childNode[0]]
-                        if nextPath not in allPaths:
-                            allPaths.append(nextPath)
-                            childPath = search(path = path + [childNode[0]])
-                            # if childPath:
-                                # print "childPath has a completedPath"
-                    # else:
-                        # print "No children nodes for node {}".format(parentNode.getName())
-            # else:
-                # print "childNode[0] in path: {} in {}".format(childNode[0], [node.getName() for node in path])
-                # raw_input()
-        if not completedPaths:
-            return "No path from start node to dest node detected..."
-        elif printNames and completedPaths:
-            return [[node.getName() for node in tuplePath] for tuplePath in completedPaths]
-        else:
-            return completedPaths
-
-    return search()
-
-
-print "Result of my function:", bruteForceSearch(load_map(), 32, 56, 100, 100)
+print [node.getName() for node in bruteForceSearch(load_map(), 36, 66, 100, 100)]
 #
 # Problem 4: Finding the Shorest Path using Optimized Search Method
 #
@@ -371,118 +391,116 @@ def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
     #TODO
     pass
 
-print "My program took", time.time() - start_time, "to run"
-# Test
-# # Uncomment below when ready to test
-# if __name__ == '__main__':
-#     # Test cases
-#     digraph = load_map("mit_map.txt")
-#
-#     LARGE_DIST = 1000000
-#
-#     # Test case 1
-#     print "---------------"
-#     print "Test case 1:"
-#     print "Find the shortest-path from Building 32 to 56"
-#     expectedPath1 = ['32', '56']
-#     brutePath1 = bruteForceSearch(digraph, '32', '56', LARGE_DIST, LARGE_DIST)
-#     dfsPath1 = directedDFS(digraph, '32', '56', LARGE_DIST, LARGE_DIST)
-#     print "Expected: ", expectedPath1
-#     print "Brute-force: ", brutePath1
-#     print "DFS: ", dfsPath1
-#
-#     # Test case 2
-#     print "---------------"
-#     print "Test case 2:"
-#     print "Find the shortest-path from Building 32 to 56 without going outdoors"
-#     expectedPath2 = ['32', '36', '26', '16', '56']
-#     brutePath2 = bruteForceSearch(digraph, '32', '56', LARGE_DIST, 0)
-#     dfsPath2 = directedDFS(digraph, '32', '56', LARGE_DIST, 0)
-#     print "Expected: ", expectedPath2
-#     print "Brute-force: ", brutePath2
-#     print "DFS: ", dfsPath2
-#
-#     # Test case 3
-#     print "---------------"
-#     print "Test case 3:"
-#     print "Find the shortest-path from Building 2 to 9"
-#     expectedPath3 = ['2', '3', '7', '9']
-#     brutePath3 = bruteForceSearch(digraph, '2', '9', LARGE_DIST, LARGE_DIST)
-#     dfsPath3 = directedDFS(digraph, '2', '9', LARGE_DIST, LARGE_DIST)
-#     print "Expected: ", expectedPath3
-#     print "Brute-force: ", brutePath3
-#     print "DFS: ", dfsPath3
-#
-#     # Test case 4
-#     print "---------------"
-#     print "Test case 4:"
-#     print "Find the shortest-path from Building 2 to 9 without going outdoors"
-#     expectedPath4 = ['2', '4', '10', '13', '9']
-#     brutePath4 = bruteForceSearch(digraph, '2', '9', LARGE_DIST, 0)
-#     dfsPath4 = directedDFS(digraph, '2', '9', LARGE_DIST, 0)
-#     print "Expected: ", expectedPath4
-#     print "Brute-force: ", brutePath4
-#     print "DFS: ", dfsPath4
-#
-#     # Test case 5
-#     print "---------------"
-#     print "Test case 5:"
-#     print "Find the shortest-path from Building 1 to 32"
-#     expectedPath5 = ['1', '4', '12', '32']
-#     brutePath5 = bruteForceSearch(digraph, '1', '32', LARGE_DIST, LARGE_DIST)
-#     dfsPath5 = directedDFS(digraph, '1', '32', LARGE_DIST, LARGE_DIST)
-#     print "Expected: ", expectedPath5
-#     print "Brute-force: ", brutePath5
-#     print "DFS: ", dfsPath5
-#
-#     # Test case 6
-#     print "---------------"
-#     print "Test case 6:"
-#     print "Find the shortest-path from Building 1 to 32 without going outdoors"
-#     expectedPath6 = ['1', '3', '10', '4', '12', '24', '34', '36', '32']
-#     brutePath6 = bruteForceSearch(digraph, '1', '32', LARGE_DIST, 0)
-#     dfsPath6 = directedDFS(digraph, '1', '32', LARGE_DIST, 0)
-#     print "Expected: ", expectedPath6
-#     print "Brute-force: ", brutePath6
-#     print "DFS: ", dfsPath6
-#
-#     # Test case 7
-#     print "---------------"
-#     print "Test case 7:"
-#     print "Find the shortest-path from Building 8 to 50 without going outdoors"
-#     bruteRaisedErr = 'No'
-#     dfsRaisedErr = 'No'
-#     try:
-#         bruteForceSearch(digraph, '8', '50', LARGE_DIST, 0)
-#     except ValueError:
-#         bruteRaisedErr = 'Yes'
-#
-#     try:
-#         directedDFS(digraph, '8', '50', LARGE_DIST, 0)
-#     except ValueError:
-#         dfsRaisedErr = 'Yes'
-#
-#     print "Expected: No such path! Should throw a value error."
-#     print "Did brute force search raise an error?", bruteRaisedErr
-#     print "Did DFS search raise an error?", dfsRaisedErr
-#
-#     # Test case 8
-#     print "---------------"
-#     print "Test case 8:"
-#     print "Find the shortest-path from Building 10 to 32 without walking"
-#     print "more than 100 meters in total"
-#     bruteRaisedErr = 'No'
-#     dfsRaisedErr = 'No'
-#     try:
-#         bruteForceSearch(digraph, '10', '32', 100, LARGE_DIST)
-#     except ValueError:
-#         bruteRaisedErr = 'Yes'
-#
-#     try:
-#         directedDFS(digraph, '10', '32', 100, LARGE_DIST)
-#     except ValueError:
-#         dfsRaisedErr = 'Yes'
-#
-#     print "Expected: No such path! Should throw a value error."
-#     print "Did brute force search raise an error?", bruteRaisedErr
-#     print "Did DFS search raise an error?", dfsRaisedErr
+# Uncomment below when ready to test
+##if __name__ == '__main__':
+##    # Test cases
+##    digraph = load_map("mit_map.txt")
+##
+##    LARGE_DIST = 1000000
+##
+##    # Test case 1
+##    print "---------------"
+##    print "Test case 1:"
+##    print "Find the shortest-path from Building 32 to 56"
+##    expectedPath1 = ['32', '56']
+##    brutePath1 = bruteForceSearch(digraph, '32', '56', LARGE_DIST, LARGE_DIST)
+##    dfsPath1 = directedDFS(digraph, '32', '56', LARGE_DIST, LARGE_DIST)
+##    print "Expected: ", expectedPath1
+##    print "Brute-force: ", brutePath1
+##    print "DFS: ", dfsPath1
+##
+##    # Test case 2
+##    print "---------------"
+##    print "Test case 2:"
+##    print "Find the shortest-path from Building 32 to 56 without going outdoors"
+##    expectedPath2 = ['32', '36', '26', '16', '56']
+##    brutePath2 = bruteForceSearch(digraph, '32', '56', LARGE_DIST, 0)
+##    dfsPath2 = directedDFS(digraph, '32', '56', LARGE_DIST, 0)
+##    print "Expected: ", expectedPath2
+##    print "Brute-force: ", brutePath2
+##    print "DFS: ", dfsPath2
+##
+##    # Test case 3
+##    print "---------------"
+##    print "Test case 3:"
+##    print "Find the shortest-path from Building 2 to 9"
+##    expectedPath3 = ['2', '3', '7', '9']
+##    brutePath3 = bruteForceSearch(digraph, '2', '9', LARGE_DIST, LARGE_DIST)
+##    dfsPath3 = directedDFS(digraph, '2', '9', LARGE_DIST, LARGE_DIST)
+##    print "Expected: ", expectedPath3
+##    print "Brute-force: ", brutePath3
+##    print "DFS: ", dfsPath3
+##
+##    # Test case 4
+##    print "---------------"
+##    print "Test case 4:"
+##    print "Find the shortest-path from Building 2 to 9 without going outdoors"
+##    expectedPath4 = ['2', '4', '10', '13', '9']
+##    brutePath4 = bruteForceSearch(digraph, '2', '9', LARGE_DIST, 0)
+##    dfsPath4 = directedDFS(digraph, '2', '9', LARGE_DIST, 0)
+##    print "Expected: ", expectedPath4
+##    print "Brute-force: ", brutePath4
+##    print "DFS: ", dfsPath4
+##
+##    # Test case 5
+##    print "---------------"
+##    print "Test case 5:"
+##    print "Find the shortest-path from Building 1 to 32"
+##    expectedPath5 = ['1', '4', '12', '32']
+##    brutePath5 = bruteForceSearch(digraph, '1', '32', LARGE_DIST, LARGE_DIST)
+##    dfsPath5 = directedDFS(digraph, '1', '32', LARGE_DIST, LARGE_DIST)
+##    print "Expected: ", expectedPath5
+##    print "Brute-force: ", brutePath5
+##    print "DFS: ", dfsPath5
+##
+##    # Test case 6
+##    print "---------------"
+##    print "Test case 6:"
+##    print "Find the shortest-path from Building 1 to 32 without going outdoors"
+##    expectedPath6 = ['1', '3', '10', '4', '12', '24', '34', '36', '32']
+##    brutePath6 = bruteForceSearch(digraph, '1', '32', LARGE_DIST, 0)
+##    dfsPath6 = directedDFS(digraph, '1', '32', LARGE_DIST, 0)
+##    print "Expected: ", expectedPath6
+##    print "Brute-force: ", brutePath6
+##    print "DFS: ", dfsPath6
+##
+##    # Test case 7
+##    print "---------------"
+##    print "Test case 7:"
+##    print "Find the shortest-path from Building 8 to 50 without going outdoors"
+##    bruteRaisedErr = 'No'
+##    dfsRaisedErr = 'No'
+##    try:
+##        bruteForceSearch(digraph, '8', '50', LARGE_DIST, 0)
+##    except ValueError:
+##        bruteRaisedErr = 'Yes'
+##
+##    try:
+##        directedDFS(digraph, '8', '50', LARGE_DIST, 0)
+##    except ValueError:
+##        dfsRaisedErr = 'Yes'
+##
+##    print "Expected: No such path! Should throw a value error."
+##    print "Did brute force search raise an error?", bruteRaisedErr
+##    print "Did DFS search raise an error?", dfsRaisedErr
+##
+##    # Test case 8
+##    print "---------------"
+##    print "Test case 8:"
+##    print "Find the shortest-path from Building 10 to 32 without walking"
+##    print "more than 100 meters in total"
+##    bruteRaisedErr = 'No'
+##    dfsRaisedErr = 'No'
+##    try:
+##        bruteForceSearch(digraph, '10', '32', 100, LARGE_DIST)
+##    except ValueError:
+##        bruteRaisedErr = 'Yes'
+##
+##    try:
+##        directedDFS(digraph, '10', '32', 100, LARGE_DIST)
+##    except ValueError:
+##        dfsRaisedErr = 'Yes'
+##
+##    print "Expected: No such path! Should throw a value error."
+##    print "Did brute force search raise an error?", bruteRaisedErr
+##    print "Did DFS search raise an error?", dfsRaisedErr
