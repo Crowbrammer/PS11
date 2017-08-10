@@ -328,7 +328,7 @@ def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
                         # print "No children nodes for node {}".format(parentNode.getName())
             # else:
                 # print "childNode[0] in path: {} in {}".format(childNode[0], [node.getName() for node in path])
-                # raw_input()
+                # raw_input()ueou
         if not completedPaths:
             return "No path from start node to dest node detected..."
         elif printNames and completedPaths:
