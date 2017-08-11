@@ -239,7 +239,7 @@ def load_map(fileName = "mit_map.txt", test = True):
 # # TODO:
 #
 
-def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
+def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors, optimized=False):
     """
     Finds the shortest path from start to end using brute-force approach.
     The total distance travelled on the path must not exceed maxTotalDist, and
@@ -313,6 +313,9 @@ def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
 
                     # print "Completed path added to completedPaths:", completedPath
                     # return path + [childNode[0]] #, nodesSeen # At each frame, return the current path and whether it's a match or not.
+                elif completedPaths and optimized:
+                    if len(min(completedPaths)) > len(path + [childNode[0]]):
+                        continue
                 else: # Has children (that are not in the path)
                     # if None
 
@@ -328,7 +331,7 @@ def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
                         # print "No children nodes for node {}".format(parentNode.getName())
             # else:
                 # print "childNode[0] in path: {} in {}".format(childNode[0], [node.getName() for node in path])
-                # raw_input()ueou
+                # raw_input()
         if not completedPaths:
             return "No path from start node to dest node detected..."
         elif printNames and completedPaths:
@@ -339,11 +342,11 @@ def bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors):
     return search()
 
 
-print "Result of my function:", bruteForceSearch(load_map(), 32, 56, 100, 100)
+
 #
 # Problem 4: Finding the Shorest Path using Optimized Search Method
 #
-def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
+def directedDFS(digraph, start, dest, maxTotalDist, maxDistOutdoors):
     """
     Finds the shortest path from start to end using directed depth-first.
     search approach. The total distance travelled on the path must not
@@ -369,8 +372,9 @@ def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
         maxDistOutdoors constraints, then raises a ValueError.
     """
     #TODO
-    pass
+    return bruteForceSearch(digraph, start, dest, maxTotalDist, maxDistOutdoors, optimized=True)
 
+print "Result of my function:", directedDFS(load_map(), 32, 56, 100, 100)
 print "My program took", time.time() - start_time, "to run"
 # Test
 # # Uncomment below when ready to test
